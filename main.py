@@ -92,9 +92,9 @@ class CsvHelper:
         data = self.read()
         print(tabulate(data[1:], headers=data[0], tablefmt="fancy_grid"))
 
-    def fill(self, *fields):
+    def fill_by_columns(self, *fields):
         """
-        Preenche várias linhas do csv simultaneamente, com a entrada
+        Preenche várias colunas do csv simultaneamente, com a entrada
         de várias listas que trazem as informações de cada campo
         """
         self.__validate_fill(*fields)
@@ -145,12 +145,33 @@ class CsvHelper:
         """
         sleep(self.rest_time)
         self.__validate_fill_one(informations)
-        informations.insert(0, str(len(self._lines)))
+        informations.insert(0, str(self._lines))
         with io.open(self._name, 'a', encoding='utf-8', newline='') as csv_file:
             writer = csv.writer(csv_file)   
             writer.writerow(informations)
         self.size_update()
     
+    def fill_many(self, informations:list[list]):
+        """
+        Preenche várias linhas da tabela
+        """
+        sleep(self.rest_time)
+        self.__validate_fill_many(informations)
+        with io.open(self._name, 'a', encoding='utf-8', newline='') as csv_file:
+            writer = csv.writer(csv_file) 
+            for counter, information in enumerate(informations):
+                information.insert(0, str(self._lines + counter))
+                writer.writerow(information)
+        self.size_update()
+    
+    def __validate_fill_many(self, informations: list[list]):
+        """
+        Valida a função fill_many
+        """
+        for information in informations:
+            if len(information) != self._columns - 1:
+                raise ValueError('Quantidade de informações incorreto')
+
     def __validate_fill_one(self, informations: list):
         """
         Valida a função fill_one
